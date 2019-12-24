@@ -8,6 +8,7 @@ import lime
 import lime.lime_tabular
 import pyrebase
 from datetime import datetime
+from pytz import timezone
 
 app = Flask(__name__)
 
@@ -48,7 +49,7 @@ def predict():
 	# yd = y.values																	#loading the pre-trained explorer
 	# exp = t.explain_instance(yd[0], predict_fn, num_features=5)						#predicting the features
 	
-	timeStamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
+	timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
 	data = { 'date': timeStamp, 'air': air, 'wlev': wlev, 'hum': hum, 'wet1': wet1, 'wet2': wet2, 'temp': temp }		#data to be pushed
 
 	db.child("tdata").child(timeStamp).set(data)									#querrrying database to push the data with timestamp as key

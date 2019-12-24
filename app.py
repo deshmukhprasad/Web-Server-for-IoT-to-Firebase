@@ -7,6 +7,7 @@ import pandas as pd
 import lime
 import lime.lime_tabular
 import pyrebase
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -24,26 +25,35 @@ firebase = pyrebase.initialize_app(config)
 
 db = firebase.database()
 
-@app.route('/', methods=['GET'])
+@app.route('/tdata/', methods=['GET'])
 def predict():
 	air = int(request.args['air'])
 	wlev = int(request.args['wlev'])
 	hum = int(request.args['hum'])
-	wet = int(request.args['wet'])
-	ldr = int(request.args['ldr'])
-	feed = int(request.args['feed'])
+	wet1 = int(request.args['wet1'])
+	wet2 = int(request.args['wet2'])
+	temp = int(request.args['temp'])
+	
+	#data preprocessing	
+	air = int(abs(air )/30)
+	wlev = abs(50 - wlev)/5
+	hum = abs(hum - 60)/4
+	temp = int(abs(temp -20)/2)
 
 	# prediction for features
-	pm = pickle.load(open('fmodel', 'rb'))
-	predict_fn = lambda x: pm.predict_proba(x).astype(float) 						#predict function for features. lime
-	t = dl.load(open('explainer','rb'))
-	y = pd.DataFrame([[air,wlev,hum,wet,ldr]])
-	yd = y.values																	#loading the pre-trained explorer
-	exp = t.explain_instance(yd[0], predict_fn, num_features=5)						#predicting the features
-	db.child("a1").push(exp.as_list())
+	# pm = pickle.load(open('fmodel', 'rb'))
+	# predict_fn = lambda x: pm.predict_proba(x).astype(float) 						#predict function for features. lime
+	# t = dl.load(open('explainer','rb'))
+	# y = pd.DataFrame([[air,wlev,hum,wet,ldr]])
+	# yd = y.values																	#loading the pre-trained explorer
+	# exp = t.explain_instance(yd[0], predict_fn, num_features=5)						#predicting the features
+	
+	timeStamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
+	data = { 'date': timeStamp, 'air': air, 'wlev': wlev, 'hum': hum, 'wet1': wet1, 'wet2': wet2, 'temp': temp }		#data to be pushed
 
+	db.child("tdata").child(timeStamp).set(data)									#querrrying database to push the data with timestamp as key
 
-	return '''<h1>The feature value is: {}</h1>'''.format(exp.as_list())
+	return '''<h1>The feature value is: {}</h1>'''.format(data)
 
 if __name__ == "__main__":
     app.run(debug=True)

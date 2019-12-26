@@ -26,10 +26,11 @@ firebase = pyrebase.initialize_app(config)
 
 db = firebase.database()
 
-timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
+# timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
 
 @app.route('/tdata/', methods=['GET'])
 def predict():
+	timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
 	air = int(request.args['air'])
 	wlev = int(request.args['wlev'])
 	hum = int(request.args['hum'])
@@ -59,6 +60,7 @@ def predict():
 
 @app.route('/freq/', methods=['GET'])
 def freq():
+	timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
 	cfreq = int(request.args['cfreq'])				#to receive frequency
 	db.child("cfreq").update({"cfreq": cfreq})
 	db.child("freq").child(timeStamp).set({"date": timeStamp, "freq": cfreq})
@@ -66,11 +68,14 @@ def freq():
 
 @app.route('/feed/', methods=['GET'])
 def feed():
+	timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
 	feed = int(request.args['feed'])				#to receive feed back
+	db.child("freed").child(timeStamp).set({"date": timeStamp, "feed": feed})
+	return '''<h1>The feature value is: {}</h1>'''.format(feed)
 
 @app.route('/att/', methods=['GET'])
 def att():
-	
+	timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
 	att = int(request.args['att'])				#to receive feed back
 	if (att == 1):
 		db.child("att").child(timeStamp).set({"date": timeStamp})

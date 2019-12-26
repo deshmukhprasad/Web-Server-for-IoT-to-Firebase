@@ -26,6 +26,8 @@ firebase = pyrebase.initialize_app(config)
 
 db = firebase.database()
 
+timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
+
 @app.route('/tdata/', methods=['GET'])
 def predict():
 	air = int(request.args['air'])
@@ -49,12 +51,33 @@ def predict():
 	# yd = y.values																	#loading the pre-trained explorer
 	# exp = t.explain_instance(yd[0], predict_fn, num_features=5)						#predicting the features
 	
-	timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
 	data = { 'date': timeStamp, 'air': air, 'wlev': wlev, 'hum': hum, 'wet1': wet1, 'wet2': wet2, 'temp': temp }		#data to be pushed
-
+	db.child("ctdata").update(data)													# updating real time data
 	db.child("tdata").child(timeStamp).set(data)									#querrrying database to push the data with timestamp as key
 
 	return '''<h1>The feature value is: {}</h1>'''.format(data)
+
+@app.route('/freq/', methods=['GET'])
+def freq():
+	cfreq = int(request.args['cfreq'])				#to receive frequency
+	db.child("cfreq").update({"cfreq": cfreq})
+	db.child("freq").child(timeStamp).set({"date": timeStamp, "freq": cfreq})
+	return '''<h1>The feature value is: {}</h1>'''.format(cfreq)
+
+@app.route('/feed/', methods=['GET'])
+def feed():
+	feed = int(request.args['feed'])				#to receive feed back
+
+@app.route('/att/', methods=['GET'])
+def att():
+	
+	att = int(request.args['att'])				#to receive feed back
+	if (att == 1):
+		db.child("att").child(timeStamp).set({"date": timeStamp})
+	# elif(att == 0):
+	# 	pass
+		
+
 
 if __name__ == "__main__":
     app.run(debug=True)

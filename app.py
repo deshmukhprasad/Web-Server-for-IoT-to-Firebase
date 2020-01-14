@@ -26,7 +26,7 @@ firebase = pyrebase.initialize_app(config)
 
 db = firebase.database()
 
-def noquote(s):
+def noquote(s):																			# The function to remove the bug in Pyrebase lib about sort function
     return s
 pyrebase.pyrebase.quote = noquote
 
@@ -83,22 +83,22 @@ def att():
 	att = int(request.args['att'])																						#to receive attendance
 	if (att == 1):																										# 1 if cleaner is about to clean
 		db.child("att").child(timeStamp).set({"date": timeStamp})														# mark the attendance of the cleaner
-	elif(att == 0):
-		date_res = db.child("att").order_by_key().limit_to_last(1).get()
+	elif(att == 0):																										# 0 if cleaner has cleaned the toilet
+		date_res = db.child("att").order_by_key().limit_to_last(1).get()												#To get the time stamp of attendance
 		for date in date_res.each():
 			before_date = date.val()
-		bdata = db.child("tdata").order_by_key().end_at(before_date['date']).limit_to_last(1).get()
-		
+
+		bdata = db.child("tdata").order_by_key().end_at(before_date['date']).limit_to_last(1).get()						# To get the data just before the attendance
 		for data in bdata.each():
 			bair = data.val()['air']
 			bwlev = data.val()['wlev']
 
-		cdata = db.child("tdata").order_by_key().limit_to_last(1).get()
+		cdata = db.child("tdata").order_by_key().limit_to_last(1).get()													# To get the data after the cleaning
 		for data in cdata.each():
 			cair = data.val()['air']
 			cwlev = data.val()['wlev']
 
-		if ((int(bair) - int(cair)) < 0 or (int(bwlev) - int(cwlev)) < 0):
+		if ((int(bair) - int(cair)) < 0 or (int(bwlev) - int(cwlev)) < 0):												# Comparing of the data
 			db.child("cqual").child(timeStamp).set({"quality": 0})
 		else:
 			db.child("cqual").child(timeStamp).set({"quality": 1})

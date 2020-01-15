@@ -73,16 +73,20 @@ def freq():
 @app.route('/feed/', methods=['GET'])
 def feed():
 	timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
-	feed = int(request.args['feed'])				#to receive feed back
-	if feed == 1:
-		clean = db.child("feed_stat").child("happy").get().val()
-		clean = clean + 1
-		db.child("feed_stat").child("happy").update({"number": clean})
+	feed = int(request.args['feed'])																					#to receive feed back value
+	if feed == 1:																										#To check feed back is clean = 1 or dirty = 0
+		clean = db.child("feed_stat").child("happy").get()																#To get previous number of clean feedbacks
+		for x in clean.each():
+			tclean = x.val()
+		tclean = int(tclean) + 1																						#Update the number
+		db.child("feed_stat").child("happy").update({"number": tclean})													#Updating in firebase
 	else:
-		dirty = db.child("feed_stat").child("sad").get().val()
-		dirty = dirty + 1
-		db.child("feed_stat").child("sad").update({"number": dirty})
-	db.child("feed").child(timeStamp).set({"date": timeStamp, "feed": feed})
+		dirty = db.child("feed_stat").child("sad").get()																
+		for x in dirty.each():
+			tdirty = x.val()
+		tdirty = int(tdirty) + 1
+		db.child("feed_stat").child("sad").update({"number": tdirty})
+	db.child("feed").child(timeStamp).set({"date": timeStamp, "feed": feed})											#Setting feedback value with timestamp
 	return '''<h1>The feature value is: {}</h1>'''.format(feed)
 
 @app.route('/att/', methods=['GET'])

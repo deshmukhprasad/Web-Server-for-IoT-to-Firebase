@@ -74,6 +74,14 @@ def freq():
 def feed():
 	timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
 	feed = int(request.args['feed'])				#to receive feed back
+	if feed == 1:
+		clean = db.child("feed_stat").child("happy").get().val()
+		clean = clean + 1
+		db.child("feed_stat").child("happy").update({"number": clean})
+	else:
+		dirty = db.child("feed_stat").child("sad").get().val()
+		dirty = dirty + 1
+		db.child("feed_stat").child("sad").update({"number": dirty})
 	db.child("feed").child(timeStamp).set({"date": timeStamp, "feed": feed})
 	return '''<h1>The feature value is: {}</h1>'''.format(feed)
 

@@ -74,7 +74,7 @@ def freq():
 def feed():
 	timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
 	feed = int(request.args['feed'])				#to receive feed back
-	db.child("freed").child(timeStamp).set({"date": timeStamp, "feed": feed})
+	db.child("feed").child(timeStamp).set({"date": timeStamp, "feed": feed})
 	return '''<h1>The feature value is: {}</h1>'''.format(feed)
 
 @app.route('/att/', methods=['GET'])

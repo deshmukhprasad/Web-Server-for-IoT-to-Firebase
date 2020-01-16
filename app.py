@@ -111,9 +111,9 @@ def att():
 			cwlev = data.val()['wlev']
 
 		if ((int(bair) - int(cair)) < 0 or (int(bwlev) - int(cwlev)) < 0):												# Comparing of the data
-			db.child("cqual").child(timeStamp).set({"quality": 0})
+			db.child("cqual").child(timeStamp).set({"date": timeStamp, "quality": 0})
 		else:
-			db.child("cqual").child(timeStamp).set({"quality": 1})
+			db.child("cqual").child(timeStamp).set({"date": timeStamp, "quality": 1})
 
 	return '''<h1>The feature value is: {}</h1>'''.format(str(bair) + ", "+ str(cair))
 

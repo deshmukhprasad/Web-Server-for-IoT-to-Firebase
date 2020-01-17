@@ -37,7 +37,7 @@ pyrebase.pyrebase.quote = noquote
 @app.route('/tdata/', methods=['GET'])
 def predict():
 	timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
-	air = int(request.args['air'])
+	air = float(request.args['air'])
 	wlev = int(request.args['wlev'])
 	hum = int(request.args['hum'])
 	wet1 = int(request.args['wet1'])

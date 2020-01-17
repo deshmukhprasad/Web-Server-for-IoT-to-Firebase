@@ -9,6 +9,8 @@ import lime.lime_tabular
 import pyrebase
 from datetime import datetime
 from pytz import timezone
+import statsmodels.api as sm 
+from statsmodels.tsa.api import ExponentialSmoothing, SimpleExpSmoothing, Holt
 
 app = Flask(__name__)
 
@@ -43,7 +45,6 @@ def predict():
 	temp = int(request.args['temp'])
 	
 	#data preprocessing	
-	air = int(abs(air )/30)
 	wlev = abs(50 - wlev)/5
 	hum = abs(hum - 60)/4
 	temp = int(abs(temp -20)/2)
@@ -117,6 +118,37 @@ def att():
 
 	return '''<h1>The feature value is: {}</h1>'''.format(str(bair) + ", "+ str(cair))
 
+@app.route('/pred/', methods=['GET'])
+def pred():
+	temp_results = sm.load('temp_results.pickle')
+	air_results = sm.load('air_results.pickle')
+	wlev_results = sm.load('wlev_results.pickle')
+	hum_results = sm.load('hum_results.pickle')
+
+	y_hat_avg = pd.DataFrame(index=np.arange(24), columns=np.arange(4))
+
+	y_hat_avg[0] = air_results.forecast(24)
+	y_hat_avg[1] = wlev_results.forecast(24)
+	y_hat_avg[2] = temp_results.forecast(24)
+	y_hat_avg[3] = hum_results.forecast(24)
+
+	for x in range(len(y_hat_avg[0])):
+		print(x)
+		db.child("prediction").child("air").child(x).set({"hour" : x, "val" : "{:.2f}".format(y_hat_avg[0][x])})
+
+	for x in range(len(y_hat_avg[0])):
+		print(x)
+		db.child("prediction").child("wlev").child(x).set({"hour" : x, "val" : "{:.2f}".format(y_hat_avg[1][x])})
+
+	for x in range(len(y_hat_avg[0])):
+		print(x)
+		db.child("prediction").child("temp").child(x).set({"hour" : x, "val" : "{:.2f}".format(y_hat_avg[2][x])})
+
+	for x in range(len(y_hat_avg[0])):
+		print(x)
+		db.child("prediction").child("hum").child(x).set({"hour" : x, "val" : "{:.2f}".format(y_hat_avg[3][x])})
+
+	return '''<h1>The feature value is: </h1>'''
 
 if __name__ == "__main__":
     app.run(debug=True)

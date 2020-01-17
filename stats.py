@@ -4,7 +4,12 @@ import matplotlib.pyplot as plt
 import statsmodels.api as sm 
 from statsmodels.tsa.api import ExponentialSmoothing, SimpleExpSmoothing, Holt
 
-new_results = sm.load('longley_results.pickle')
+temp_results = sm.load('temp_results.pickle')
+air_results = sm.load('air_results.pickle')
+wlev_results = sm.load('wlev_results.pickle')
+hum_results = sm.load('hum_results.pickle')
+
+
 
 # df = pd.read_csv('data.csv')
 # df.Timestamp = pd.to_datetime(df.datetime)
@@ -22,11 +27,15 @@ new_results = sm.load('longley_results.pickle')
 
 #y_hat_avg = test.copy()
 
-y_hat_avg = pd.DataFrame(index=np.arange(12), columns=np.arange(1))
+y_hat_avg = pd.DataFrame(index=np.arange(24), columns=np.arange(4))
 
 print(y_hat_avg.shape)
 
-y_hat_avg[0] = new_results.forecast(12)
+y_hat_avg[0] = air_results.forecast(24)
+y_hat_avg[1] = wlev_results.forecast(24)
+y_hat_avg[2] = temp_results.forecast(24)
+y_hat_avg[3] = hum_results.forecast(24)
+
 
 print(y_hat_avg)
 

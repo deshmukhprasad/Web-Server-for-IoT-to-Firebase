@@ -43,11 +43,11 @@ def predict():
 	wet1 = int(request.args['wet1'])
 	wet2 = int(request.args['wet2'])
 	temp = int(request.args['temp'])
-	
+	tid = request.args['tid']
 	#data preprocessing	
-	wlev = abs(50 - wlev)/5
-	hum = abs(hum - 60)/4
-	temp = int(abs(temp -20)/2)
+	# wlev = abs(50 - wlev)/5
+	# hum = abs(hum - 60)/4
+	# temp = int(abs(temp -20)/2)
 
 	# prediction for features
 	# pm = pickle.load(open('fmodel', 'rb'))
@@ -58,68 +58,72 @@ def predict():
 	# exp = t.explain_instance(yd[0], predict_fn, num_features=5)						#predicting the features
 	
 	data = { 'date': timeStamp, 'air': air, 'wlev': wlev, 'hum': hum, 'wet1': wet1, 'wet2': wet2, 'temp': temp }		#data to be pushed
-	db.child("ctdata").update(data)													# updating real time data
-	db.child("tdata").child(timeStamp).set(data)									#querrrying database to push the data with timestamp as key
+	db.child(tid).child("ctdata").update(data)													# updating real time data
+	db.child(tid).child("tdata").child(timeStamp).set(data)									#querrrying database to push the data with timestamp as key
 
 	return '''<h1>The feature value is: {}</h1>'''.format(data)
 
 @app.route('/freq/', methods=['GET'])
 def freq():
 	timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
-	cfreq = int(request.args['cfreq'])				#to receive frequency
-	db.child("cfreq").update({"cfreq": cfreq})
-	db.child("freq").child(timeStamp).set({"date": timeStamp, "freq": cfreq})
+	cfreq = int(request.args['cfreq'])
+	tid = request.args['tid']				#to receive frequency
+	db.child(tid).child("cfreq").update({"cfreq": cfreq})
+	db.child(tid).child("freq").child(timeStamp).set({"date": timeStamp, "freq": cfreq})
 	return '''<h1>The feature value is: {}</h1>'''.format(cfreq)
 
 @app.route('/feed/', methods=['GET'])
 def feed():
 	timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
-	feed = int(request.args['feed'])																					#to receive feed back value
+	feed = int(request.args['feed'])
+	tid = request.args['tid']																					#to receive feed back value
 	if feed == 1:																										#To check feed back is clean = 1 or dirty = 0
-		clean = db.child("feed_stat").child("happy").get()																#To get previous number of clean feedbacks
+		clean = db.child(tid).child("feed_stat").child("happy").get()																#To get previous number of clean feedbacks
 		for x in clean.each():
 			tclean = x.val()
 		tclean = int(tclean) + 1																						#Update the number
-		db.child("feed_stat").child("happy").update({"number": tclean})													#Updating in firebase
+		db.child(tid).child("feed_stat").child("happy").update({"number": tclean})													#Updating in firebase
 	else:
-		dirty = db.child("feed_stat").child("sad").get()																
+		dirty = db.child(tid).child("feed_stat").child("sad").get()																
 		for x in dirty.each():
 			tdirty = x.val()
 		tdirty = int(tdirty) + 1
-		db.child("feed_stat").child("sad").update({"number": tdirty})
-	db.child("feed").child(timeStamp).set({"date": timeStamp, "feed": feed})											#Setting feedback value with timestamp
+		db.child(tid).child("feed_stat").child("sad").update({"number": tdirty})
+	db.child(tid).child("feed").child(timeStamp).set({"date": timeStamp, "feed": feed})											#Setting feedback value with timestamp
 	return '''<h1>The feature value is: {}</h1>'''.format(feed)
 
 @app.route('/att/', methods=['GET'])
 def att():
 	timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
-	att = int(request.args['att'])																						#to receive attendance
+	att = int(request.args['att'])
+	tid = request.args['tid']																						#to receive attendance
 	if (att == 1):																										# 1 if cleaner is about to clean
-		db.child("att").child(timeStamp).set({"date": timeStamp})														# mark the attendance of the cleaner
+		db.child(tid).child("att").child(timeStamp).set({"date": timeStamp})														# mark the attendance of the cleaner
 	elif(att == 0):																										# 0 if cleaner has cleaned the toilet
-		date_res = db.child("att").order_by_key().limit_to_last(1).get()												#To get the time stamp of attendance
+		date_res = db.child(tid).child("att").order_by_key().limit_to_last(1).get()												#To get the time stamp of attendance
 		for date in date_res.each():
 			before_date = date.val()
 
-		bdata = db.child("tdata").order_by_key().end_at(before_date['date']).limit_to_last(1).get()						# To get the data just before the attendance
+		bdata = db.child(tid).child("tdata").order_by_key().end_at(before_date['date']).limit_to_last(1).get()						# To get the data just before the attendance
 		for data in bdata.each():
 			bair = data.val()['air']
 			bwlev = data.val()['wlev']
 
-		cdata = db.child("tdata").order_by_key().limit_to_last(1).get()													# To get the data after the cleaning
+		cdata = db.child(tid).child("tdata").order_by_key().limit_to_last(1).get()													# To get the data after the cleaning
 		for data in cdata.each():
 			cair = data.val()['air']
 			cwlev = data.val()['wlev']
 
 		if ((int(bair) - int(cair)) < 0 or (int(bwlev) - int(cwlev)) < 0):												# Comparing of the data
-			db.child("cqual").child(timeStamp).set({"date": timeStamp, "quality": 0})
+			db.child(tid).child("cqual").child(timeStamp).set({"date": timeStamp, "quality": 0})
 		else:
-			db.child("cqual").child(timeStamp).set({"date": timeStamp, "quality": 1})
+			db.child(tid).child("cqual").child(timeStamp).set({"date": timeStamp, "quality": 1})
 
-	return '''<h1>The feature value is: {}</h1>'''.format(str(bair) + ", "+ str(cair))
+	return '''<h1>The feature value is: {}</h1>'''
 
 @app.route('/pred/', methods=['GET'])
 def pred():
+	tid = request.args['tid']
 	temp_results = sm.load('temp_results.pickle')
 	air_results = sm.load('air_results.pickle')
 	wlev_results = sm.load('wlev_results.pickle')
@@ -133,20 +137,20 @@ def pred():
 	y_hat_avg[3] = hum_results.forecast(24)
 
 	for x in range(len(y_hat_avg[0])):
-		print(x)
-		db.child("prediction").child("air").child(x).set({"hour" : x, "val" : "{:.2f}".format(y_hat_avg[0][x])})
+		# print(x)
+		db.child(tid).child("prediction").child("air").child(x).set({"hour" : x, "val" : "{:.2f}".format(y_hat_avg[0][x])})
 
 	for x in range(len(y_hat_avg[0])):
-		print(x)
-		db.child("prediction").child("wlev").child(x).set({"hour" : x, "val" : "{:.2f}".format(y_hat_avg[1][x])})
+		# print(x)
+		db.child(tid).child("prediction").child("wlev").child(x).set({"hour" : x, "val" : "{:.2f}".format(y_hat_avg[1][x])})
 
 	for x in range(len(y_hat_avg[0])):
-		print(x)
-		db.child("prediction").child("temp").child(x).set({"hour" : x, "val" : "{:.2f}".format(y_hat_avg[2][x])})
+		# print(x)
+		db.child(tid).child("prediction").child("temp").child(x).set({"hour" : x, "val" : "{:.2f}".format(y_hat_avg[2][x])})
 
 	for x in range(len(y_hat_avg[0])):
-		print(x)
-		db.child("prediction").child("hum").child(x).set({"hour" : x, "val" : "{:.2f}".format(y_hat_avg[3][x])})
+		# print(x)
+		db.child(tid).child("prediction").child("hum").child(x).set({"hour" : x, "val" : "{:.2f}".format(y_hat_avg[3][x])})
 
 	return '''<h1>The feature value is: </h1>'''
 

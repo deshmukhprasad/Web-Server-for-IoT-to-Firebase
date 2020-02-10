@@ -43,6 +43,7 @@ def predict():
 	wet1 = int(request.args['wet1'])
 	wet2 = int(request.args['wet2'])
 	temp = int(request.args['temp'])
+	soap = int(request.args['soap'])
 	tid = request.args['tid']
 	#data preprocessing	
 	# wlev = abs(50 - wlev)/5
@@ -57,7 +58,7 @@ def predict():
 	# yd = y.values																	#loading the pre-trained explorer
 	# exp = t.explain_instance(yd[0], predict_fn, num_features=5)						#predicting the features
 	
-	data = { 'date': timeStamp, 'air': air, 'wlev': wlev, 'hum': hum, 'wet1': wet1, 'wet2': wet2, 'temp': temp }		#data to be pushed
+	data = { 'date': timeStamp, 'air': air, 'wlev': wlev, 'hum': hum, 'wet1': wet1, 'wet2': wet2, 'temp': temp, 'soap': soap }		#data to be pushed
 	db.child(tid).child("ctdata").update(data)													# updating real time data
 	db.child(tid).child("tdata").child(timeStamp).set(data)									#querrrying database to push the data with timestamp as key
 

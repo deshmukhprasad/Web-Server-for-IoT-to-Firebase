@@ -71,7 +71,7 @@ def freq():
 	timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
 	cfreq = int(request.args['cfreq'])
 	tid = request.args['tid']		#to receive frequency
-	freq = db.child("cfreq").get().val()['cfreq']
+	freq = db.child(tid).child("cfreq").get().val()['cfreq']
 	if cfreq == 0:
 		freq = 0
 	elif cfreq == 1:

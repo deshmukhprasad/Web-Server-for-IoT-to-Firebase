@@ -26,6 +26,8 @@ config = {
 
 firebase = pyrebase.initialize_app(config)
 
+freq = 0  #counter for freq
+
 db = firebase.database()
 
 def noquote(s):																			# The function to remove the bug in Pyrebase lib about sort function
@@ -69,6 +71,11 @@ def freq():
 	timeStamp = datetime.now().astimezone(timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")						#converting timestamp into string
 	cfreq = int(request.args['cfreq'])
 	tid = request.args['tid']				#to receive frequency
+	if cfreq == 0:
+		cfreq = freq
+	elif cfreq == 1:
+		freq = freq + 1
+		cfreq = freq
 	db.child(tid).child("cfreq").update({"cfreq": cfreq})
 	db.child(tid).child("freq").child(timeStamp).set({"date": timeStamp, "freq": cfreq})
 	return '''<h1>The feature value is: {}</h1>'''.format(cfreq)

@@ -4,7 +4,7 @@ The data is preprocessed by the server before sending to the firebase.
 It makes use of pyrebase library to communicate with Firebase.
 The incoming data is processed under machine learning algorithm for Time Series Prediction.
 
-#Technology Stack:
+# Technology Stack:
 - Web Server
 - Python
 - Flask
@@ -14,3 +14,4 @@ The incoming data is processed under machine learning algorithm for Time Series 
 - IoT
 - Machine Learning
 
+![Image](https://github.com/deshmukhprasad/Web-Server-for-IoT-to-Firebase/blob/master/FlaskWebServer.png)
